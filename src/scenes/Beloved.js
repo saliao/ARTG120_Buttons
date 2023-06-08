@@ -18,6 +18,10 @@ class Beloved extends Phaser.Scene {
     }
     preload() {
         // load images/tile sprites
+        this.load.image('bosstile', './assets/Boss Action Tile Sprite.png');
+        this.load.image('startbutton', './assets/Start Button.png');
+        this.load.image('nextbutton', './assets/Next Button.png');
+        this.load.image('endbutton', './assets/End Turn Button.png');
         this.load.image('healthbar', './assets/green.png');
         this.load.image('back', './assets/back1.png');
         this.load.image('beloved', './assets/beloved.png');
@@ -59,7 +63,9 @@ class Beloved extends Phaser.Scene {
         this.bosstitle = this.add.text(game.config.width/2, game.config.height/2 -  5.5*borderUISize, 'The Beloved',menuConfig).setOrigin(0.5);
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
-        this.roundtext = this.add.text(20, game.config.height -  1.5*borderUISize, 'Round: '+this.round,menuConfig);
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15, 'Round: '+this.round,menuConfig);
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -72,6 +78,10 @@ class Beloved extends Phaser.Scene {
         //     frameRate: 30
         // });
 
+        //Boss action tile
+        this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize, 'bosstile').setScale(0.25);
+        this.bossActionTile.setDepth(-1);
+
         // create text objects to display current number and entry line (not important or used at all)
         this.currentNumberText = this.add.text(10, 10, this.currentNumber);
         this.entryLineText = this.add.text(10, 50, "");
@@ -80,6 +90,99 @@ class Beloved extends Phaser.Scene {
         //this.input.keyboard.on('keydown', this.handleInput, this); 
 
         let bossList; //Not used
+
+        // Adding Clickable buttons
+        this.startButton = this.add.sprite(game.config.width-120, game.config.height -  1.5*borderUISize,'nextbutton').setScale(0.25);
+        this.startButton.setInteractive();
+        this.tint = '0x00ff00';
+        
+        //button functions
+        this.startButton.on('pointerover',function(pointer){
+            //this.setFrame(1);
+            //this.setTintFill(0xffffff);
+            //this.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
+            this.setTint(this.scene.tint);
+            //this.set
+            console.log('pointer on')
+        })
+        
+        this.startButton.on('pointerout',function(pointer){
+            //this.setFrame(0);
+            this.clearTint();
+            console.log('pointer off')
+        })
+        
+        this.startButton.on('pointerdown',function(pointer){
+            if(!this.scene.gameOver) {
+    
+                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false &&this.scene.bossPhase==false){
+                this.scene.bosslog.text = 'players now input their damage on the grey box'
+                this.scene.actionPhase = true;
+                this.scene.announcePhase = false;
+                this.scene.bossPhase = false;
+                
+                }   
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true &&this.scene.bossPhase == false){
+                    this.scene.bosslog.text = currentBossmove[1];
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = true;
+                    let random = Math.floor((Math.random()*number_of_players)+1);
+                    let random2;
+                    do
+                    {
+                        random2 = Math.floor((Math.random()*number_of_players)+1);
+                    }while(random2 == random)
+                    var sample = [];
+                    for(var i =0; i < number_of_players; i++){
+                        sample.push(i+1);
+                    }
+                    
+                    if (currentBossmove[0] == 'Regroup') {
+                        //this.bosslog.text = 'I hit player ' + random + ' for 3 damage';
+                        this.scene.heal(this.scene.damagetook/2);
+        
+                        this.scene.damagetook = 0;
+                    }
+                    else if (currentBossmove[0] == "Empathy") {
+                        this.scene.bosslog.text = "I reduce player " + random + "'s damage \ndealt by 2 until I die.";
+                    }
+                    else if (currentBossmove[0] == "Charm") {
+                        this.scene.bosslog.text = "I hit player "+ random2 + " for 2 damage \nand make them attack player " + random +"."
+                    }
+                    else if (currentBossmove[0] == "Attack" && number_of_players > 1) {
+                        var playertargets = this.scene.sample_range(sample,2);
+                        console.log(sample);
+                        if(this.scene.bossHealth/this.scene.bossMaxHealth <= 0.5)
+                            this.scene.bosslog.text = "I hit player " + random + " for 3 damage.";
+                        else
+                            this.scene.bosslog.text = "I hit player " + random + " and player " + random2 + " for 3 damage each.";
+                    }
+                    else if (currentBossmove[0] == "Attack" && number_of_players == 1) {
+                        if(this.scene.bossHealth/this.scene.bossMaxHealth <= 0.5)
+                            this.scene.bosslog.text = "I hit player 1 twice for 3 damage each.";
+                        else
+                        this.scene.bosslog.text = "I hit player 1 for 3 damage.";
+                    }
+                    this.scene.damagetook = 0;
+                    
+                }
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
+                    let nextmove = this.scene.Beloved.announce();
+                    
+                    this.scene.bosslog.text = "I am going to " +nextmove;
+                    this.scene.bossPhase = false;
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = true;
+                    this.scene.round++;
+                    console.log(this.scene.round);
+                    
+                }
+        }
+
+
+
+        });
 
 
         // make Beloved boss
@@ -112,7 +215,7 @@ class Beloved extends Phaser.Scene {
 
 
         //Instruction text below the health bar that says to press left arrow and end turn for the boss's next announcement
-        this.add.text(20, 70, 'Press right arrow to move\nto the next turn');
+        this.add.text(20, 70, 'Click the button on the bottom right\nto enter next turn or start');
         this.add.text(20, 150, 'press enter key to damage the boss \nor left arrow to heal it. \n*note is for players turn only.');
         //Adding REXUI textfield now
         game.config.dom = true;
@@ -248,15 +351,24 @@ class Beloved extends Phaser.Scene {
         //We are constantly checking and changing the phase text to the current phase based on whether actionPhase or announcePhase is true.
         if(this.actionPhase == true) {
             this.phase.text = "Players' Turn";
+            this.startButton.setTexture('endbutton');
+            this.startButton.X += 20;
+            this.tint = (0xff0000)
         }
         if(this.announcePhase == true) {
+            this.startButton.setTexture('startbutton');
             this.phase.text = "Announcement";
             this.phase.color = '#880808';
+            this.startButton.X -= 20;
+            this.tint = '0x00ff00';
             
         }
         if(this.bossPhase == true) {
+            this.startButton.setTexture('nextbutton');
             this.phase.text = currentBossmove[0];
-            this.phase.color = '#880808';
+            //this.phase.color = '#880808';
+            this.startButton.X += 20;
+            this.tint = '0x00ff00';
             
         }
         //If the game is over and the input is keyRight, we move to the brute

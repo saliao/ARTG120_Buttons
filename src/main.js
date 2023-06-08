@@ -15,7 +15,7 @@ Look at the menuScene or Menus.js first because is the starting screen.
 
 //Sets up the game configuration, which includes the width and height of the canvas, what scenes there are, and the container.
 let config = {
-    type: Phaser.CANVAS,
+    type: Phaser.WEBGL,
     parent: 'phaser-example',
     width: 1280,
     height: 720,
