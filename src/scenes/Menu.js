@@ -9,7 +9,6 @@ class Menu extends Phaser.Scene {
     }
     preload() {
         //Loading or installing the REXUI texfield plugin by link from github
-        this.load.image('startbutton', './assets/Start Button.png');
         var url;
         url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js';
         this.load.plugin('rexbbcodetextplugin', url, true);
