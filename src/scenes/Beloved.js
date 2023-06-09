@@ -18,6 +18,10 @@ class Beloved extends Phaser.Scene {
     }
     preload() {
         // load images/tile sprites
+        this.load.image('bosstile', './assets/Boss Action Tile Sprite.png');
+        this.load.image('startbutton', './assets/Start Button.png');
+        this.load.image('nextbutton', './assets/Next Button.png');
+        this.load.image('endbutton', './assets/End Turn Button.png');
         this.load.image('healthbar', './assets/green.png');
         this.load.image('back', './assets/back1.png');
         this.load.image('beloved', './assets/beloved.png');
@@ -57,9 +61,12 @@ class Beloved extends Phaser.Scene {
         
         //Adding our boss title text for Beloved
         this.bosstitle = this.add.text(game.config.width/2, game.config.height/2 -  5.5*borderUISize, 'The Beloved',menuConfig).setOrigin(0.5);
+        this.bosstitle.setTint(0xFF00FF, 0xFFD5FF, 0xFFACFF, 0x9900FF)
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
-        this.roundtext = this.add.text(20, game.config.height -  1.5*borderUISize, 'Round: '+this.round,menuConfig);
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -71,6 +78,13 @@ class Beloved extends Phaser.Scene {
         //     frames: this.anims.generateFrameNumbers('', { start: 0, end: 0, first: 0}),
         //     frameRate: 30
         // });
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        
+        //Boss action tile
+        this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize-30, 'bosstile').setScale(0.25);
+        this.bossActionTile.setDepth(-1);
 
         // create text objects to display current number and entry line (not important or used at all)
         this.currentNumberText = this.add.text(10, 10, this.currentNumber);
@@ -80,6 +94,103 @@ class Beloved extends Phaser.Scene {
         //this.input.keyboard.on('keydown', this.handleInput, this); 
 
         let bossList; //Not used
+
+        // Adding Clickable buttons
+        this.startButton = this.add.sprite(game.config.width-120, game.config.height -  1.5*borderUISize,'nextbutton').setScale(0.25);
+        this.startButton.setInteractive();
+        this.tint = '0x00ff00';
+        
+        //button functions
+        this.startButton.on('pointerover',function(pointer){
+            //this.setFrame(1);
+            //this.setTintFill(0xffffff);
+            //this.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
+            this.setTint(this.scene.tint);
+            //this.set
+            console.log('pointer on')
+        })
+        
+        this.startButton.on('pointerout',function(pointer){
+            //this.setFrame(0);
+            this.clearTint();
+            console.log('pointer off')
+        })
+        
+        this.startButton.on('pointerdown',function(pointer){
+            if(!this.scene.gameOver) {
+            
+                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false &&this.scene.bossPhase==false){
+                this.scene.bosslog.text = 'players now input their damage on the grey box'
+                this.scene.actionPhase = true;
+                this.scene.announcePhase = false;
+                this.scene.bossPhase = false;
+                this.setTint(0xff0000);
+                
+                }   
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true &&this.scene.bossPhase == false){
+                    this.scene.bosslog.text = currentBossmove[1];
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = true;
+                    let random = Math.floor((Math.random()*number_of_players)+1);
+                    let random2;
+                    do
+                    {
+                    let random2 = Math.floor((Math.random()*number_of_players)+1);
+                        random2 = Math.floor((Math.random()*number_of_players)+1);
+                    let random3 = Math.floor((Math.random()*number_of_players)+1);
+                    }while(random2 == random)
+                    let random3 = Math.floor((Math.random()*number_of_players)+1);
+                    var sample = [];
+                    for(var i =0; i < number_of_players; i++){
+                        sample.push(i+1);
+                    }
+                    
+                    if (currentBossmove[0] == 'Regroup') {
+                        //this.bosslog.text = 'I hit player ' + random + ' for 3 damage';
+                        this.scene.heal(this.scene.damagetook/2);
+        
+                        this.scene.damagetook = 0;
+                    }
+                    else if (currentBossmove[0] == "Empathy") {
+                        this.scene.bosslog.text = "I reduce player " + random + "'s damage \ndealt by 2 until I die.";
+                    }
+                    else if (currentBossmove[0] == "Charm" && number_of_players > 1) {
+                        var playertargets = this.sample_range(sample,2);
+                        console.log(sample);
+                        this.scene.bosslog.text = "I hit player "+ playertargets[0] + " for 2 damage \nand make them attack player " +playertargets[1] +"."
+                    }
+                    else if (this.scene.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players > 1) {
+                        var playertargets = this.scene.sample_range(sample,2);
+                        console.scene.log(sample);
+                        this.scene.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each: \nif I lose half of my HP, \nI only attack once.";
+
+                    }
+                    else if (this.scene.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players == 1) {
+                        
+                        this.scene.bosslog.text = "I hit player " + random3  + " for 3 damage. \nif I lose half of my HP, \nI miss the attack.";
+
+                    }
+                    this.scene.damagetook = 0;
+                    this.setTint(0x00ff00);
+                    
+                    
+                }
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
+                    let nextmove = this.scene.Beloved.announce();
+                    
+                    this.scene.bosslog.text = "I am going to " +nextmove;
+                    this.scene.bossPhase = false;
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = true;
+                    this.scene.round++;
+                    console.log(this.scene.round);
+                    this.setTint(0x00ff00);
+                    
+                }
+        }
+            
+        });
 
 
         // make Beloved boss
@@ -112,8 +223,8 @@ class Beloved extends Phaser.Scene {
 
 
         //Instruction text below the health bar that says to press left arrow and end turn for the boss's next announcement
-        this.add.text(20, 70, 'Press right arrow to move\nto the next turn');
-        this.add.text(20, 150, 'press enter key to damage the boss \nor left arrow to heal it. \n*note is for players turn only.');
+        this.add.text(20, 70, 'Click the button on the bottom right\nto enter next turn or start');
+        this.add.text(20, 150, 'press enter key to damage the boss \n*note is for players turn only.');
         //Adding REXUI textfield now
         game.config.dom = true;
         game.config.parent = this;
@@ -249,15 +360,24 @@ class Beloved extends Phaser.Scene {
         //We are constantly checking and changing the phase text to the current phase based on whether actionPhase or announcePhase is true.
         if(this.actionPhase == true) {
             this.phase.text = "Players' Turn";
+            this.startButton.setTexture('endbutton');
+            this.startButton.X += 20;
+            this.tint = (0xff0000)
         }
         if(this.announcePhase == true) {
             this.phase.text = "Announcement";
+            this.startButton.setTexture('startbutton');
             this.phase.color = '#880808';
+            this.startButton.X -= 20;
+            this.tint = '0x00ff00';
             
         }
         if(this.bossPhase == true) {
+            this.startButton.setTexture('nextbutton');
             this.phase.text = currentBossmove[0];
             this.phase.color = '#880808';
+            this.startButton.X += 20;
+            this.tint = '0x00ff00';
             
         }
         //If the game is over and the input is keyRight, we move to the brute
@@ -265,74 +385,74 @@ class Beloved extends Phaser.Scene {
             this.scene.start("bruteScene");
         }
         //If the game is over and the input is keyRight, we move to the brute, else we change phases
-        if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+        // if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
             
-                if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
-                this.bosslog.text = 'players now input their damage on the grey box'
-                this.actionPhase = true;
-                this.announcePhase = false;
-                this.bossPhase = false;
+        //         if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
+        //         this.bosslog.text = 'players now input their damage on the grey box'
+        //         this.actionPhase = true;
+        //         this.announcePhase = false;
+        //         this.bossPhase = false;
                 
-                }   
-                else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
-                    this.bosslog.text = currentBossmove[1];
-                    this.actionPhase = false;
-                    this.announcePhase = false;
-                    this.bossPhase = true;
-                    let random = Math.floor((Math.random()*number_of_players)+1);
-                    let random2;
-                    do
-                    {
-                    let random2 = Math.floor((Math.random()*number_of_players)+1);
-                        random2 = Math.floor((Math.random()*number_of_players)+1);
-                    let random3 = Math.floor((Math.random()*number_of_players)+1);
-                    }while(random2 == random)
-                    let random3 = Math.floor((Math.random()*number_of_players)+1);
-                    var sample = [];
-                    for(var i =0; i < number_of_players; i++){
-                        sample.push(i+1);
-                    }
+        //         }   
+        //         else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
+        //             this.bosslog.text = currentBossmove[1];
+        //             this.actionPhase = false;
+        //             this.announcePhase = false;
+        //             this.bossPhase = true;
+        //             let random = Math.floor((Math.random()*number_of_players)+1);
+        //             let random2;
+        //             do
+        //             {
+        //             let random2 = Math.floor((Math.random()*number_of_players)+1);
+        //                 random2 = Math.floor((Math.random()*number_of_players)+1);
+        //             let random3 = Math.floor((Math.random()*number_of_players)+1);
+        //             }while(random2 == random)
+        //             let random3 = Math.floor((Math.random()*number_of_players)+1);
+        //             var sample = [];
+        //             for(var i =0; i < number_of_players; i++){
+        //                 sample.push(i+1);
+        //             }
                     
-                    if (currentBossmove[0] == 'Regroup') {
-                        //this.bosslog.text = 'I hit player ' + random + ' for 3 damage';
-                        this.heal(this.damagetook/2);
+        //             if (currentBossmove[0] == 'Regroup') {
+        //                 //this.bosslog.text = 'I hit player ' + random + ' for 3 damage';
+        //                 this.heal(this.damagetook/2);
         
-                        this.damagetook = 0;
-                    }
-                    else if (currentBossmove[0] == "Empathy") {
-                        this.bosslog.text = "I reduce player " + random + "'s damage \ndealt by 2 until I die.";
-                    }
-                    else if (currentBossmove[0] == "Charm" && number_of_players > 1) {
-                        var playertargets = this.sample_range(sample,2);
-                        console.log(sample);
-                        this.bosslog.text = "I hit player "+ playertargets[0] + " for 2 damage \nand make them attack player " +playertargets[1] +"."
-                    }
-                    else if (this.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players > 1) {
-                        var playertargets = this.sample_range(sample,2);
-                        console.log(sample);
-                        this.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each: \nif I lose half of my HP, \nI only attack once.";
+        //                 this.damagetook = 0;
+        //             }
+        //             else if (currentBossmove[0] == "Empathy") {
+        //                 this.bosslog.text = "I reduce player " + random + "'s damage \ndealt by 2 until I die.";
+        //             }
+        //             else if (currentBossmove[0] == "Charm" && number_of_players > 1) {
+        //                 var playertargets = this.sample_range(sample,2);
+        //                 console.log(sample);
+        //                 this.bosslog.text = "I hit player "+ playertargets[0] + " for 2 damage \nand make them attack player " +playertargets[1] +"."
+        //             }
+        //             else if (this.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players > 1) {
+        //                 var playertargets = this.sample_range(sample,2);
+        //                 console.log(sample);
+        //                 this.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each: \nif I lose half of my HP, \nI only attack once.";
 
-                    }
-                    else if (this.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players == 1) {
+        //             }
+        //             else if (this.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players == 1) {
                         
-                        this.bosslog.text = "I hit player " + random3  + " for 3 damage. \nif I lose half of my HP, \nI miss the attack.";
+        //                 this.bosslog.text = "I hit player " + random3  + " for 3 damage. \nif I lose half of my HP, \nI miss the attack.";
 
-                    }
-                    this.damagetook = 0;
+        //             }
+        //             this.damagetook = 0;
                     
-                }
-                else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
-                    let nextmove = this.Beloved.announce();
+        //         }
+        //         else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
+        //             let nextmove = this.Beloved.announce();
                     
-                    this.bosslog.text = "I am going to " +nextmove;
-                    this.bossPhase = false;
-                    this.actionPhase = false;
-                    this.announcePhase = true;
-                    this.round++;
-                    console.log(this.round);
+        //             this.bosslog.text = "I am going to " +nextmove;
+        //             this.bossPhase = false;
+        //             this.actionPhase = false;
+        //             this.announcePhase = true;
+        //             this.round++;
+        //             console.log(this.round);
                     
-                }
-        }
+        //         }
+        // }
         //Press Enter to damage the boss
         if (Phaser.Input.Keyboard.JustDown(keyENTER)) {
     

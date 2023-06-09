@@ -61,11 +61,13 @@ class Traveler extends Phaser.Scene {
 
         //Adding our boss title text for Traveler
         this.bosstitle = this.add.text(game.config.width/2, game.config.height/2 -  5.5*borderUISize, 'The Traveler',menuConfig).setOrigin(0.5);
+        this.bosstitle.setTint(0xADFF5C, 0xBDFF7D, 0xD5FFAC, 0x00FF00)
+        
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
         menuConfig.backgroundColor= '';
         menuConfig.color = '#000'
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15, 'Round: '+this.round,menuConfig);
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -79,7 +81,7 @@ class Traveler extends Phaser.Scene {
         // });
 
         //Boss action tile
-        this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize, 'bosstile').setScale(0.25);
+        this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize-30, 'bosstile').setScale(0.25);
         this.bossActionTile.setDepth(-1);
 
         // create text objects to display current number and entry line (not important or used at all)

@@ -17,6 +17,10 @@ class Brute extends Phaser.Scene {
     preload() {
         
         // load images/tile sprites
+        this.load.image('bosstile', './assets/Boss Action Tile Sprite.png');
+        this.load.image('startbutton', './assets/Start Button.png');
+        this.load.image('nextbutton', './assets/Next Button.png');
+        this.load.image('endbutton', './assets/End Turn Button.png');
         this.load.image('healthbar', './assets/green.png');
         this.load.image('back', './assets/back1.png');
         this.load.image('brute', './assets/brute.png');
@@ -61,12 +65,20 @@ class Brute extends Phaser.Scene {
 
         //Adding our boss title text for Brute
         this.bosstitle = this.add.text(game.config.width/2, game.config.height/2 -  5.5*borderUISize, 'The Brute',menuConfig).setOrigin(0.5);
+
+        this.bosstitle.setTint(0xFF0000, 0xA30000, 0x530000, 0x753333)
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
-        this.roundtext = this.add.text(20, game.config.height -  1.5*borderUISize, 'Round: '+this.round,menuConfig);
         
-        this.bossstatus1 = this.add.text(20, game.config.height -  2.5*borderUISize, 'Enrage: Off',menuConfig);
-        this.bossstatus2 = this.add.text(20, game.config.height -  2*borderUISize, 'Brace: Off',menuConfig);
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        menuConfig.fontSize = '20px';
+        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+20, 'Enrage: Off',menuConfig);
+        menuConfig.fontSize = '20px';
+        this.bossstatus2 = this.add.text(60, game.config.height -  3.5*borderUISize+15+40, 'Brace: Off',menuConfig);
+        menuConfig.fontSize = '24px';
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -79,6 +91,14 @@ class Brute extends Phaser.Scene {
         //     frameRate: 30
         // });
 
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        //this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        
+        //Boss action tile
+        this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize-30, 'bosstile').setScale(0.25);
+        this.bossActionTile.setDepth(-1);
+
         // create text objects to display current number and entry line (not important or used at all)
         this.currentNumberText = this.add.text(10, 10, this.currentNumber);
         this.entryLineText = this.add.text(10, 50, "");
@@ -87,6 +107,96 @@ class Brute extends Phaser.Scene {
         //this.input.keyboard.on('keydown', this.handleInput, this); 
 
         let bossList; //Not used
+
+        // Adding Clickable buttons
+        this.startButton = this.add.sprite(game.config.width-120, game.config.height -  1.5*borderUISize,'nextbutton').setScale(0.25);
+        this.startButton.setInteractive();
+        this.tint = '0x00ff00';
+        
+        //button functions
+        this.startButton.on('pointerover',function(pointer){
+            //this.setFrame(1);
+            //this.setTintFill(0xffffff);
+            //this.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
+            this.setTint(this.scene.tint);
+            //this.set
+            console.log('pointer on')
+        })
+        
+        this.startButton.on('pointerout',function(pointer){
+            //this.setFrame(0);
+            this.clearTint();
+            console.log('pointer off')
+        })
+        
+        this.startButton.on('pointerdown',function(pointer){
+            if(!this.scene.gameOver) {
+             
+                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false &&this.scene.bossPhase==false){
+                    console.log("It is changing from announcement"+ this.scene.bossHealth);
+                    
+                    
+                    this.scene.bosslog.text = 'players now input their damage on the grey box'
+                    this.scene.actionPhase = true;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = false;
+
+                    this.setTint(0xff0000);
+                    
+                    }   
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true &&this.scene.bossPhase == false){
+                    this.scene.bosslog.text = currentBossmove[1];
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = true;
+                    let random = Math.floor((Math.random()*number_of_players)+1);
+                    let random2 = Math.floor((Math.random()*number_of_players)+1);
+                    if (this.scene.fatalattack == true){
+                        this.scene.bosslog.text = 'I hit player ' + random2 + ' for ' + (12+this.scene.bonusdmg) + ' damage';
+                        this.scene.fatalattack = false;
+                    }
+                    else if (currentBossmove[0] == 'Attack') {
+                        this.scene.bosslog.text = 'I hit player ' + random + ' for ' + (5+this.scene.bonusdmg) + '  damage';
+            
+                    }
+                    else if (currentBossmove[0] == 'Savage Blow') {
+                        this.scene.bosslog.text = 'I am charging up an attack.'
+                        this.scene.fatalattack = true;
+                    }
+                    else if (currentBossmove[0] == 'Enrage') {
+                        this.scene.enrage = true;
+                        this.scene.bonusdmg++;
+                        this.scene.bossstatus1.text = 'Brute Dmg: +' + this.scene.bonusdmg;
+            
+                    }
+                    else if (currentBossmove[0] == 'Brace') {
+                        this.scene.brace = true;
+                        this.scene.bossstatus2.text = 'Brace: heal 10';
+                        
+                    }
+                    if(this.scene.brace==true){
+                        this.scene.heal(10);
+                    }
+                    this.setTint(0x00ff00);
+                }
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
+                    this.scene.bosslog2.text = '';
+                    if(this.scene.fatalattack == false)
+                        this.nextmove = this.scene.Brute.announce();
+                    
+                    this.scene.bosslog.text = "I am going to " + this.scene.nextmove;
+                    this.scene.bossPhase = false;
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = true;
+                    this.scene.round++;
+                    console.log(this.scene.round);
+                    this.setTint(0x00ff00);
+                }
+            }
+            
+            
+        });
+
 
 
         // make Brute boss
@@ -121,7 +231,7 @@ class Brute extends Phaser.Scene {
         this.add.text(20, 110, 'Click grey textbox to start editing\ndamage calculation.');
 
         //Instruction text below the health bar that says to press left arrow and end turn for the boss's next announcement
-        this.add.text(20, 70, 'Press right arrow to move\nto the next turn');
+        this.add.text(20, 70, 'Click the button on the bottom right\nto enter next turn or start');
         this.add.text(20, 150, 'press enter key to damage the boss. \npress left arrow to debuff boss.\n*note only works during action phase.');
         
         //Adding REXUI textfield now
@@ -251,15 +361,24 @@ class Brute extends Phaser.Scene {
         //We are constantly checking and changing the phase text to the current phase based on whether actionPhase or announcePhase is true.
         if(this.actionPhase == true && this.announcePhase == false) {
             this.phase.text = "Players' Turn";
+            this.startButton.setTexture('endbutton');
+            this.startButton.X += 20;
+            this.tint = (0xff0000)
         }
         if(this.announcePhase == true) {
             this.phase.text = "Announcement";
+            this.startButton.setTexture('startbutton');
             this.phase.color = '#880808';
+            this.startButton.X -= 20;
+            this.tint = '0x00ff00';
             
         }
         if(this.bossPhase == true) {
+            this.startButton.setTexture('nextbutton');
             this.phase.text = currentBossmove[0];
             this.phase.color = '#880808';
+            this.startButton.X += 20;
+            this.tint = '0x00ff00';
             
         }
         if(this.enrage == false) {
@@ -274,64 +393,65 @@ class Brute extends Phaser.Scene {
             
         }
         //If the game is over and the input is keyRight, we move to the dragon, else we change phases
-        if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+        // if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
              
-            if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
-                console.log("It is changing from announcement"+ this.bossHealth);
+        //     if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
+        //         console.log("It is changing from announcement"+ this.bossHealth);
                 
                 
-                this.bosslog.text = 'players now input their damage on the grey box'
-                this.actionPhase = true;
-                this.announcePhase = false;
-                this.bossPhase = false;
+        //         this.bosslog.text = 'players now input their damage on the grey box'
+        //         this.actionPhase = true;
+        //         this.announcePhase = false;
+        //         this.bossPhase = false;
                 
-                }   
-            else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
-                this.bosslog.text = currentBossmove[1];
-                this.actionPhase = false;
-                this.announcePhase = false;
-                this.bossPhase = true;
-                let random = Math.floor((Math.random()*number_of_players)+1);
-                let random2 = Math.floor((Math.random()*number_of_players)+1);
-                if (this.fatalattack == true){
-                    this.bosslog.text = 'I hit player ' + random2 + ' for ' + (12+this.bonusdmg) + ' damage';
-                    this.fatalattack = false;
-                }
-                else if (currentBossmove[0] == 'Attack') {
-                    this.bosslog.text = 'I hit player ' + random + ' for ' + (5+this.bonusdmg) + '  damage';
+        //         }   
+        //     else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
+        //         this.bosslog.text = currentBossmove[1];
+        //         this.actionPhase = false;
+        //         this.announcePhase = false;
+        //         this.bossPhase = true;
+        //         let random = Math.floor((Math.random()*number_of_players)+1);
+        //         let random2 = Math.floor((Math.random()*number_of_players)+1);
+        //         if (this.fatalattack == true){
+        //             this.bosslog.text = 'I hit player ' + random2 + ' for ' + (12+this.bonusdmg) + ' damage';
+        //             this.fatalattack = false;
+        //         }
+        //         else if (currentBossmove[0] == 'Attack') {
+        //             this.bosslog.text = 'I hit player ' + random + ' for ' + (5+this.bonusdmg) + '  damage';
         
-                }
-                else if (currentBossmove[0] == 'Savage Blow') {
-                    this.bosslog.text = 'I am charging up an attack.'
-                    this.fatalattack = true;
-                }
-                else if (currentBossmove[0] == 'Enrage') {
-                    this.enrage = true;
-                    this.bonusdmg++;
-                    this.bossstatus1.text = 'On attack, Brute Deals +' + this.bonusdmg;
+        //         }
+        //         else if (currentBossmove[0] == 'Savage Blow') {
+        //             this.bosslog.text = 'I am charging up an attack.'
+        //             this.fatalattack = true;
+        //         }
+        //         else if (currentBossmove[0] == 'Enrage') {
+        //             this.enrage = true;
+        //             this.bonusdmg++;
+        //             this.bossstatus1.text = 'Brute Dmg: +' + this.bonusdmg;
         
-                }
-                else if (currentBossmove[0] == 'Brace') {
-                    this.brace = true;
-                    this.bossstatus2.text = 'Brace: I heal 10 every round';
-                }
-                if(this.brace==true){
-                    this.heal(10);
-                }
-            }
-            else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
-                this.bosslog2.text = '';
-                if(this.fatalattack == false)
-                    this.nextmove = this.Brute.announce();
+        //         }
+        //         else if (currentBossmove[0] == 'Brace') {
+        //             this.brace = true;
+        //             this.bossstatus2.text = 'Brace: heal 10';
+                    
+        //         }
+        //         if(this.brace==true){
+        //             this.heal(10);
+        //         }
+        //     }
+        //     else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
+        //         this.bosslog2.text = '';
+        //         if(this.fatalattack == false)
+        //             this.nextmove = this.Brute.announce();
                 
-                this.bosslog.text = "I am going to " + this.nextmove;
-                this.bossPhase = false;
-                this.actionPhase = false;
-                this.announcePhase = true;
-                this.round++;
-                console.log(this.round);
-            }
-        }
+        //         this.bosslog.text = "I am going to " + this.nextmove;
+        //         this.bossPhase = false;
+        //         this.actionPhase = false;
+        //         this.announcePhase = true;
+        //         this.round++;
+        //         console.log(this.round);
+        //     }
+        // }
         //Press Enter to damage the boss
         if (Phaser.Input.Keyboard.JustDown(keyENTER)) {
 

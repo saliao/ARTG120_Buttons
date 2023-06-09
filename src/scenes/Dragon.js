@@ -20,6 +20,10 @@ class Dragon extends Phaser.Scene {
     }
     preload() {
         // load images/tile sprites
+        this.load.image('bosstile', './assets/Boss Action Tile Sprite.png');
+        this.load.image('startbutton', './assets/Start Button.png');
+        this.load.image('nextbutton', './assets/Next Button.png');
+        this.load.image('endbutton', './assets/End Turn Button.png');
         this.load.image('healthbar', './assets/green.png');
         this.load.image('back', './assets/back1.png');
         this.load.image('dragon', './assets/dragon.png');
@@ -63,9 +67,20 @@ class Dragon extends Phaser.Scene {
 
         //Adding our boss title text for Dragon
         this.bosstitle = this.add.text(game.config.width/2, game.config.height/2 -  5.5*borderUISize, 'The Dragon',menuConfig).setOrigin(0.5);
+        this.bosstitle.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
-        this.roundtext = this.add.text(20, game.config.height -  1.5*borderUISize, 'Round: '+this.round,menuConfig);
+        menuConfig.backgroundColor= '';
+        menuConfig.color = '#000'
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        menuConfig.fontSize = '20px';
+        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+20, 'Scale Armor: '+this.scalearmor,menuConfig);
+        menuConfig.fontSize = '24px';
+
+         //Boss action tile
+         this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize-30, 'bosstile').setScale(0.25);
+         this.bossActionTile.setDepth(-1);
+
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -87,6 +102,100 @@ class Dragon extends Phaser.Scene {
 
         let bossList; //Not used
 
+        // Adding Clickable buttons
+        this.startButton = this.add.sprite(game.config.width-120, game.config.height -  1.5*borderUISize,'nextbutton').setScale(0.25);
+        this.startButton.setInteractive();
+        this.tint = '0x00ff00';
+        
+        //button functions
+        this.startButton.on('pointerover',function(pointer){
+            //this.setFrame(1);
+            //this.setTintFill(0xffffff);
+            //this.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
+            this.setTint(this.scene.tint);
+            //this.set
+            console.log('pointer on')
+        })
+        
+        this.startButton.on('pointerout',function(pointer){
+            //this.setFrame(0);
+            this.clearTint();
+            console.log('pointer off')
+        })
+        
+        this.startButton.on('pointerdown',function(pointer){
+            if(!this.scene.gameOver) {
+             
+                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false &&this.scene.bossPhase==false){
+                    console.log("It is changing from announcement"+ this.scene.bossHealth);
+                    
+                
+                    this.scene.bosslog.text = 'players now input their damage on the grey box'
+                    this.scene.actionPhase = true;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = false;
+
+                    this.setTint(0xff0000);
+                    
+                    }   
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true &&this.scene.bossPhase == false){
+                    this.scene.bosslog.text = currentBossmove[1];
+                    
+                    let random = Math.floor((Math.random()*number_of_players)+1);
+                    let target;
+                    var sample = [];
+                    for(var i=1; i < number_of_players; i++){
+                        do
+                            target = Math.floor((Math.random()*number_of_players)+1)
+                        while(sample.includes(target) == true)
+                        sample.push(target);
+                    }
+                    if (currentBossmove[0] == 'Attack') {
+                        this.scene.bosslog.text = 'I hit player ' + random + ' for 8 damage';
+            
+                    }
+                    else if (currentBossmove[0] == 'Scale Armor') {
+                        this.scene.scalearmor += 2;
+            
+                    }
+                    else if (currentBossmove[0] == "Cave-In") {
+                        this.scene.rubblefalling = true;
+                        this.scene.num_rubble = Math.floor((Math.random()*number_of_players)+1);
+                        this.scene.bosslog.text = "I smash the ground dealing 2 damage to all players\ncausing rubble to fall on " + this.scene.num_rubble + " random players for 2 damage each round"
+                    }
+                    if (this.scene.rubblefalling == true && number_of_players > 1) {
+                        this.scene.bosslog2.text = 'Players hit by rubble for 2 damage: '+ sample;
+                        console.log(sample);
+                    }
+                    else if (this.scene.rubblefalling == true && number_of_players == 1) {
+                        this.scene.bosslog2.text = 'Player 1 is hit by rubble for 2 damage';
+                        console.log(sample);
+                    }
+                    console.log('hi');
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = false;
+                    this.scene.bossPhase = true;
+                    this.setTint(0x00ff00);
+                    
+                }
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
+                    let nextmove = this.scene.Dragon.announce();
+                    this.scene.bosslog2.text = '';
+                    this.scene.bosslog.text = "I am going to " +nextmove;
+                    this.scene.bossPhase = false;
+                    this.scene.actionPhase = false;
+                    this.scene.announcePhase = true;
+                    this.scene.round++;
+                    console.log(this.scene.round);
+                    this.setTint(0x00ff00);
+                    
+                }
+            }
+            
+            
+            
+        });
+
         // make Dragon boss
         //Making const DragonMoves a List of typed out moves of the Traveler based on the rule's sheet or card.
         const DragonMoves = ["Attack: I hit a random player for 8 damage","Fire Breath: I bellow fire to hit all players for 6 damage", "Cave-In: I smash the ground dealing 2 damage to all players and causing " +this.num_rubble+" rubble to fall on random players for 2 damage each next round", "Scale Armor: Whenever I take damage, reduce it by 2, this stacks."];
@@ -104,7 +213,7 @@ class Dragon extends Phaser.Scene {
         this.bosslog2 = this.add.text(game.config.width/2, game.config.height/2 - 4.5* borderUISize, '').setOrigin(0.5);
         this.bosslog = this.add.text(game.config.width/2, game.config.height/2 - 3* borderUISize, '').setOrigin(0.5);
         this.bosslog.text = "I am going to " +this.Dragon.announce();
-        this.bossstatus1 = this.add.text(20, game.config.height -  2*borderUISize, 'Scale Armor: '+this.scalearmor,menuConfig);
+        
         this.nexturnDialogue = this.add.text(game.config.width/2, game.config.height/2 - 1.9* borderUISize, '').setOrigin(0.5);
         
  
@@ -115,7 +224,7 @@ class Dragon extends Phaser.Scene {
         this.add.text(20, 110, 'Click grey textbox to start editing\ndamage calculation.');
 
         //Instruction text below the health bar that says to press left arrow and end turn for the boss's next announcement
-        this.add.text(20, 70, 'Press right arrow to move\nto the next turn');
+        this.add.text(20, 70, 'Click the button on the bottom right\nto enter next turn or start');
         this.add.text(20, 150, 'press enter key to damage the boss. \npress left arrow to debuff boss.\n*note only works during action phase.');
         
         //Adding REXUI textfield now
@@ -252,18 +361,28 @@ class Dragon extends Phaser.Scene {
         //We are constantly checking and changing the phase text to the current phase based on whether actionPhase or announcePhase is true.
         if(this.actionPhase == true && this.announcePhase == false) {
             this.phase.text = "Players' Turn";
+            this.startButton.setTexture('endbutton');
+            this.startButton.X += 20;
+            this.tint = (0xff0000)
         }
         if(this.announcePhase == true) {
             this.phase.text = "Announcement";
+            this.startButton.setTexture('startbutton');
             this.phase.color = '#880808';
+            this.startButton.X -= 20;
+            this.tint = '0x00ff00';
+
             
         }
 
         
 
         if(this.bossPhase == true) {
+            this.startButton.setTexture('nextbutton');
             this.phase.text = currentBossmove[0];
             this.phase.color = '#880808';
+            this.startButton.X += 20;
+            this.tint = '0x00ff00';
             
         }
         //If the game is over and the input is keyRight, we move to the Menu
@@ -273,69 +392,69 @@ class Dragon extends Phaser.Scene {
             this.scene.start('menuScene');
         }
         //If the game is over and the input is keyRight, we move to the menu, else we change phases
-        if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+        // if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
              
-            if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
-                console.log("It is changing from announcement"+ this.bossHealth);
+        //     if (this.bossHealth > 0 && this.announcePhase == true && this.actionPhase == false &&this.bossPhase==false){
+        //         console.log("It is changing from announcement"+ this.bossHealth);
                 
             
-                this.bosslog.text = 'players now input their damage on the grey box'
-                this.actionPhase = true;
-                this.announcePhase = false;
-                this.bossPhase = false;
+        //         this.bosslog.text = 'players now input their damage on the grey box'
+        //         this.actionPhase = true;
+        //         this.announcePhase = false;
+        //         this.bossPhase = false;
                 
-                }   
-            else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
-                this.bosslog.text = currentBossmove[1];
+        //         }   
+        //     else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == true &&this.bossPhase == false){
+        //         this.bosslog.text = currentBossmove[1];
                 
-                let random = Math.floor((Math.random()*number_of_players)+1);
-                let target;
-                var sample = [];
-                for(var i=1; i < number_of_players; i++){
-                    do
-                        target = Math.floor((Math.random()*number_of_players)+1)
-                    while(sample.includes(target) == true)
-                    sample.push(target);
-                }
-                if (currentBossmove[0] == 'Attack') {
-                    this.bosslog.text = 'I hit player ' + random + ' for 8 damage';
+        //         let random = Math.floor((Math.random()*number_of_players)+1);
+        //         let target;
+        //         var sample = [];
+        //         for(var i=1; i < number_of_players; i++){
+        //             do
+        //                 target = Math.floor((Math.random()*number_of_players)+1)
+        //             while(sample.includes(target) == true)
+        //             sample.push(target);
+        //         }
+        //         if (currentBossmove[0] == 'Attack') {
+        //             this.bosslog.text = 'I hit player ' + random + ' for 8 damage';
         
-                }
-                else if (currentBossmove[0] == 'Scale Armor') {
-                    this.scalearmor += 2;
+        //         }
+        //         else if (currentBossmove[0] == 'Scale Armor') {
+        //             this.scalearmor += 2;
         
-                }
-                else if (currentBossmove[0] == "Cave-In") {
-                    this.rubblefalling = true;
-                    this.num_rubble = Math.floor((Math.random()*number_of_players)+1);
-                    this.bosslog.text = "I smash the ground dealing 2 damage to all players\ncausing rubble to fall on " + this.num_rubble + " random players for 2 damage each round"
-                }
-                if (this.rubblefalling == true && number_of_players > 1) {
-                    this.bosslog2.text = 'Players hit by rubble for 2 damage: '+ sample;
-                    console.log(sample);
-                }
-                else if (this.rubblefalling == true && number_of_players == 1) {
-                    this.bosslog2.text = 'Player 1 is hit by rubble for 2 damage';
-                    console.log(sample);
-                }
-                console.log('hi');
-                this.actionPhase = false;
-                this.announcePhase = false;
-                this.bossPhase = true;
+        //         }
+        //         else if (currentBossmove[0] == "Cave-In") {
+        //             this.rubblefalling = true;
+        //             this.num_rubble = Math.floor((Math.random()*number_of_players)+1);
+        //             this.bosslog.text = "I smash the ground dealing 2 damage to all players\ncausing rubble to fall on " + this.num_rubble + " random players for 2 damage each round"
+        //         }
+        //         if (this.rubblefalling == true && number_of_players > 1) {
+        //             this.bosslog2.text = 'Players hit by rubble for 2 damage: '+ sample;
+        //             console.log(sample);
+        //         }
+        //         else if (this.rubblefalling == true && number_of_players == 1) {
+        //             this.bosslog2.text = 'Player 1 is hit by rubble for 2 damage';
+        //             console.log(sample);
+        //         }
+        //         console.log('hi');
+        //         this.actionPhase = false;
+        //         this.announcePhase = false;
+        //         this.bossPhase = true;
                 
-            }
-            else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
-                let nextmove = this.Dragon.announce();
-                this.bosslog2.text = '';
-                this.bosslog.text = "I am going to " +nextmove;
-                this.bossPhase = false;
-                this.actionPhase = false;
-                this.announcePhase = true;
-                this.round++;
-                console.log(this.round);
+        //     }
+        //     else if (this.bossHealth > 0 && this.announcePhase == false && this.actionPhase == false &&this.bossPhase == true) {
+        //         let nextmove = this.Dragon.announce();
+        //         this.bosslog2.text = '';
+        //         this.bosslog.text = "I am going to " +nextmove;
+        //         this.bossPhase = false;
+        //         this.actionPhase = false;
+        //         this.announcePhase = true;
+        //         this.round++;
+        //         console.log(this.round);
                 
-            }
-        }
+        //     }
+        // }
         //Press Enter to damage the boss
         if (Phaser.Input.Keyboard.JustDown(keyENTER)) {
 
