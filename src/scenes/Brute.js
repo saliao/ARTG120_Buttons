@@ -182,7 +182,7 @@ class Brute extends Phaser.Scene {
                 else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
                     this.scene.bosslog2.text = '';
                     if(this.scene.fatalattack == false)
-                        this.nextmove = this.scene.Brute.announce();
+                        this.scene.nextmove = this.scene.Brute.announce();
                     
                     this.scene.bosslog.text = "I am going to " + this.scene.nextmove;
                     this.scene.bossPhase = false;
