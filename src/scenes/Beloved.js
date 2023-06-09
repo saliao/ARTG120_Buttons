@@ -156,17 +156,17 @@ class Beloved extends Phaser.Scene {
                         this.scene.bosslog.text = "I reduce player " + random + "'s damage \ndealt by 2 until I die.";
                     }
                     else if (currentBossmove[0] == "Charm" && number_of_players > 1) {
-                        var playertargets = this.sample_range(sample,2);
-                        console.log(sample);
+                        var playertargets = this.scene.sample_range(sample,2);
+                        //console.log(sample);
                         this.scene.bosslog.text = "I hit player "+ playertargets[0] + " for 2 damage \nand make them attack player " +playertargets[1] +"."
                     }
-                    else if (this.scene.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players > 1) {
+                    else if (currentBossmove[0] == "Attack" && number_of_players > 1) {
                         var playertargets = this.scene.sample_range(sample,2);
-                        console.scene.log(sample);
+                        //console.scene.log(sample);
                         this.scene.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each: \nif I lose half of my HP, \nI only attack once.";
 
                     }
-                    else if (this.scene.bosslog.text == "I hit two random players for 3 damage each: \nif I lose half of my HP, \nI only attack once." && number_of_players == 1) {
+                    else if (currentBossmove[0] == "Attack" && number_of_players == 1) {
                         
                         this.scene.bosslog.text = "I hit player " + random3  + " for 3 damage. \nif I lose half of my HP, \nI miss the attack.";
 
