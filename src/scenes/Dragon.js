@@ -72,9 +72,9 @@ class Dragon extends Phaser.Scene {
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
         menuConfig.backgroundColor= '';
         menuConfig.color = '#000'
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-32, 'Round: '+this.round,menuConfig);
         menuConfig.fontSize = '20px';
-        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+20, 'Scale Armor: '+this.scalearmor,menuConfig);
+        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+18, 'Scale Armor: '+this.scalearmor,menuConfig);
         menuConfig.fontSize = '24px';
 
          //Boss action tile
@@ -144,12 +144,13 @@ class Dragon extends Phaser.Scene {
                     let random = Math.floor((Math.random()*number_of_players)+1);
                     let target;
                     var sample = [];
-                    for(var i=1; i < number_of_players; i++){
+                    for(var i=1; i <= this.scene.num_rubble; i++){
                         do
-                            target = Math.floor((Math.random()*number_of_players)+1)
+                            target = Math.floor((Math.random()*(number_of_players))+1)
                         while(sample.includes(target) == true)
                         sample.push(target);
                     }
+                    console.log("sample: " + sample);
                     if (currentBossmove[0] == 'Attack') {
                         this.scene.bosslog.text = 'I hit player ' + random + ' for 8 damage';
             
@@ -160,7 +161,7 @@ class Dragon extends Phaser.Scene {
                     }
                     else if (currentBossmove[0] == "Cave-In") {
                         this.scene.rubblefalling = true;
-                        this.scene.num_rubble = Math.floor((Math.random()*number_of_players)+1);
+                        this.scene.num_rubble = Math.floor((Math.random()*(number_of_players-1))+1);
                         this.scene.bosslog.text = "I smash the ground dealing 2 damage to all players\ncausing rubble to fall on " + this.scene.num_rubble + " random players for 2 damage each round"
                     }
                     if (this.scene.rubblefalling == true && number_of_players > 1) {
@@ -195,14 +196,14 @@ class Dragon extends Phaser.Scene {
             
             
         });
-
+        this.num_rubble = number_of_players;
         // make Dragon boss
         //Making const DragonMoves a List of typed out moves of the Traveler based on the rule's sheet or card.
         const DragonMoves = ["Attack: I hit a random player for 8 damage","Fire Breath: I bellow fire to hit all players for 6 damage", "Cave-In: I smash the ground dealing 2 damage to all players and causing " +this.num_rubble+" rubble to fall on random players for 2 damage each next round", "Scale Armor: Whenever I take damage, reduce it by 2, this stacks."];
         this.DragonMoves2 = [["Attack", ["Attack", "I hit a random player for 8 damage"]],
                             ["perform a Special Attack", ["Fire Breath", "I bellow fire to hit all players for 6 damage"]],
                             ["perform a Special Attack", ["Cave-In", "I smash the ground dealing 2 damage to all players\ncausing " + this.num_rubble + " rubble to fall on \n" + this.num_rubble + "random players for 2 damage each round"]],
-                            ["Buff myself", ["Scale Armor", "Whenever I take damage, \nreduce it by 2, this stacks."]]];
+                            ["Buff myself", ["Scale Armor", "Whenever I take damage, \nreduce it by 2"]]];
         //create the Dragon boss sprite and also pass its moves over for announce() later.
         this.Dragon = new Boss(this, game.config.width/2, game.config.height/3, 'dragon', this.DragonMoves2, 40,).setOrigin(0.5, 0).setScale(0.35);
         
@@ -389,7 +390,7 @@ class Dragon extends Phaser.Scene {
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
             //this.scene.start("menuScene");
             //this.scene.restart();
-            this.scene.start('menuScene');
+            this.scene.start('victoryScene');
         }
         //If the game is over and the input is keyRight, we move to the menu, else we change phases
         // if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {

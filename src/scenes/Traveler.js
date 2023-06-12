@@ -33,6 +33,8 @@ class Traveler extends Phaser.Scene {
         this.announcePhase = true;
         //This sets playerdmg to zero initially because the room just got created, and no damage exist yet.
         playerdmg = 0;
+        this.timesHit = 0;
+        this.parry = 0;
 
         //this is for checking if the game is over, so when initilized it is false.
         this.gameOver = false;
@@ -67,7 +69,7 @@ class Traveler extends Phaser.Scene {
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
         menuConfig.backgroundColor= '';
         menuConfig.color = '#000'
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-32, 'Round: '+this.round,menuConfig);
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -106,22 +108,17 @@ class Traveler extends Phaser.Scene {
             //this.setTint(0xffff00, 0xffff00, 0xff0000, 0xff0000)
             this.setTint(this.scene.tint);
             //this.set
-            console.log('pointer on')
         })
         
         this.startButton.on('pointerout',function(pointer){
             //this.setFrame(0);
             this.clearTint();
-            console.log('pointer off')
         })
         
-        this.startButton.on('pointerdown',function(pointer){
+        this.startButton.on('pointerdown',function(pointer) {
             if(!this.scene.gameOver) {
-                console.log(this.scene.bossHealth)
                 
-                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false &&this.scene.bossPhase==false){
-                    console.log("It is changing from announcement"+ this.scene.bossHealth);
-                    
+                if (this.scene.bossHealth > 0 && this.scene.announcePhase == true && this.scene.actionPhase == false && this.scene.bossPhase==false){
                     this.scene.bosslog.text = 'players now input their damage on the grey box'
                     this.scene.actionPhase = true;
                     this.scene.announcePhase = false;
@@ -129,7 +126,7 @@ class Traveler extends Phaser.Scene {
                     
                     this.setTint(0xff0000);
                     }   
-                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true &&this.scene.bossPhase == false){
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == true && this.scene.bossPhase == false){
                     this.scene.bosslog.text = currentBossmove[1];
                     this.scene.actionPhase = false;
                     this.scene.announcePhase = false;
@@ -138,11 +135,23 @@ class Traveler extends Phaser.Scene {
                     if (currentBossmove[0] == 'Attack') {
                         this.scene.bosslog.text = 'I hit player ' + random + ' for 3 damage';
                     }
+                    if (currentBossmove[0] == 'Flurry') {
+                        this.scene.bosslog.text = 'I attack each player for ' + (2 + this.scene.timesHit) + ' damage twice';
+                    }
+                    if (currentBossmove[0] == 'Parry') {
+                        if(this.scene.parry == 0)
+                        {
+                            this.scene.parryText = this.scene.add.text(60, game.config.height -  3.5*borderUISize+17, '',menuConfig);
+                        }
+                        this.scene.parry += 1;
+                        var num = this.scene.parry;
+                        this.scene.parryText.text = 'Parry: ' + num;
+                    }
                     
                     this.setTint(0x00ff00);
                     
                 }
-                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false &&this.scene.bossPhase == true) {
+                else if (this.scene.bossHealth > 0 && this.scene.announcePhase == false && this.scene.actionPhase == false && this.scene.bossPhase == true) {
                     let nextmove = this.scene.Traveler.announce();
                     
                     this.scene.bosslog.text = "I am going to " +nextmove;
@@ -150,7 +159,6 @@ class Traveler extends Phaser.Scene {
                     this.scene.actionPhase = false;
                     this.scene.announcePhase = true;
                     this.scene.round++;
-                    console.log(this.scene.round);
                     
                     this.setTint(0x00ff00);
                 }
@@ -217,17 +225,14 @@ class Traveler extends Phaser.Scene {
         this.warning = this.add.text(game.config.width/2, game.config.height/2 + borderUISize +80, '').setOrigin(0.5);
         this.plugins.get('rextexteditplugin').add(printText, {
             onOpen: function (textObject) {
-                console.log('Open text editor');
             },
             onTextChanged: function (textObject, text) {
                 textObject.text = text;
-                console.log(`Text: ${text}`);
 
                 //We turn the textfield text input the value of the global variable playerdmg.
                 playerdmg = parseInt(text);
             },
             onClose: function (textObject) {
-                console.log('Close text editor');
                 textObject.text = 0;
             },
             selectAll: true,
@@ -320,6 +325,7 @@ class Traveler extends Phaser.Scene {
             this.tint = (0xff0000)
         }
         if(this.announcePhase == true) {
+            this.timesHit = 0;
             this.startButton.setTexture('startbutton');
             this.phase.text = "Announcement";
             //this.phase.color = '#880808';
@@ -378,12 +384,43 @@ class Traveler extends Phaser.Scene {
     //     }
         //Press Enter to damage the boss
         if (Phaser.Input.Keyboard.JustDown(keyENTER)) {
-            console.log("damage");
-            console.log(playerdmg);
-            if (this.bossHealth >= 0 && !isNaN(playerdmg) &&this.actionPhase == true){
+            if (this.parry == 0 && this.bossHealth >= 0 && !isNaN(playerdmg) && this.actionPhase == true){
                 this.damage(playerdmg);
+                this.timesHit += 1;
                 //this.bosslog.text = this.Traveler.announce();
                 playerdmg = 0;
+            }
+            else if(this.parry > 0) {
+                this.parry -= 1;
+                this.parryText.text = 'Parry: ' + this.parry;
+                if(this.parry == 0) {
+                    this.parryText.text = '';
+                }  
+                let pText = this.add.text(400, 300, 'Parried!', {
+                    fontSize: '48px',
+                    color: '#ffffff'
+                });
+                // add a tween to fade the text away
+                this.tweens.add({
+                    targets: pText,
+                    alpha: 0,
+                    duration: 1000, // duration in milliseconds
+                    ease: 'Linear',
+                    onComplete: () => { pText.destroy() } // when the tween is complete
+                });
+                
+                let hitText = this.add.text(810, 300, 'I hit back\nfor 2 damage!', {
+                    fontSize: '44px',
+                    color: '#ffffff'
+                });
+                // add a tween to fade the text away
+                this.tweens.add({
+                    targets: hitText,
+                    alpha: 0,
+                    duration: 3000, // duration in milliseconds
+                    ease: 'Linear',
+                    onComplete: () => { hitText.destroy() } // when the tween is complete
+                });
             }
         }
         
