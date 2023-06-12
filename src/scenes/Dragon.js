@@ -390,7 +390,7 @@ class Dragon extends Phaser.Scene {
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
             //this.scene.start("menuScene");
             //this.scene.restart();
-            this.scene.start('menuScene');
+            this.scene.start('victoryScene');
         }
         //If the game is over and the input is keyRight, we move to the menu, else we change phases
         // if(!this.gameOver && Phaser.Input.Keyboard.JustDown(keyRIGHT)) {

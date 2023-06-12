@@ -86,6 +86,17 @@ class Menu extends Phaser.Scene {
 
         //Text right above the textfield in the Menu, below Game title.
         this.add.text(game.config.width/2, game.config.height/2, 'Enter the number of players below.', menuConfig).setOrigin(0.5);
+        // Lance Dennison
+        // Stephanie He
+        // Samuel Liao
+        // Graham Taylor
+        this.credits = "Game Design - Lance Dennison\n"
+                        + "Programming - Samuel Liau, Graham Taylor\n"
+                        + "Supplimentary Programming - Lance Dennison\n"
+                        + "Art - Stephanie He\n"
+                        + "Card Art - Lance Dennison";
+        this.creditsText = this.add.text(game.config.width - 10, game.config.height - 10, this.credits, menuConfig).setOrigin(1).setFontSize('20px');
+        this.creditsText.align = 'right';
 
         this.add.text(20, 20, "First the boss will make an annoucement for what they will do on their turn.\nNext is the players' turn.\nThe players will strategize according to the boss' next action.\nEach player uses one of their Hero's actions and any damage\ndealt to the boss is entered into the entry box.\nNext is the boss' turn where they complete the action that was announced.\nThen a new round begins.\n\nThe players are responsible for keeping track of their own health (20 MAX)\nand any active statuses with the help of tokens.");
         

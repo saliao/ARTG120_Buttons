@@ -31,7 +31,7 @@ let config = {
         createContainer: true
     },
     //Ignore Demo.js, this was for testing the RexUI plugin textfield on an empty canvas.
-    scene: [ Menu, Demo, Traveler, Beloved, Brute, Dragon ]
+    scene: [ Menu, Demo, Traveler, Beloved, Brute, Dragon, Victory ]
 }
 
 //Declaring our keys input and also the game for each room.
