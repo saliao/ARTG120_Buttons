@@ -73,11 +73,11 @@ class Brute extends Phaser.Scene {
         menuConfig.backgroundColor= '';
         menuConfig.color = '#000'
         
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-32, 'Round: '+this.round,menuConfig);
         menuConfig.fontSize = '20px';
-        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+20, 'Enrage: Off',menuConfig);
+        this.bossstatus1 = this.add.text(60, game.config.height -  3.5*borderUISize+19, 'Enrage: Off',menuConfig);
         menuConfig.fontSize = '20px';
-        this.bossstatus2 = this.add.text(60, game.config.height -  3.5*borderUISize+15+40, 'Brace: Off',menuConfig);
+        this.bossstatus2 = this.add.text(60, game.config.height -  3.5*borderUISize+15+38, 'Brace: Off',menuConfig);
         menuConfig.fontSize = '24px';
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
@@ -156,7 +156,7 @@ class Brute extends Phaser.Scene {
                         this.scene.fatalattack = false;
                     }
                     else if (currentBossmove[0] == 'Attack') {
-                        this.scene.bosslog.text = 'I hit player ' + random + ' for ' + (5+this.scene.bonusdmg) + '  damage';
+                        this.scene.bosslog.text = 'I hit player ' + random + ' for ' + (5+this.scene.bonusdmg) + ' damage';
             
                     }
                     else if (currentBossmove[0] == 'Savage Blow') {
@@ -166,7 +166,7 @@ class Brute extends Phaser.Scene {
                     else if (currentBossmove[0] == 'Enrage') {
                         this.scene.enrage = true;
                         this.scene.bonusdmg++;
-                        this.scene.bossstatus1.text = 'Brute Dmg: +' + this.scene.bonusdmg;
+                        this.scene.bossstatus1.text = 'Enraged: +' + this.scene.bonusdmg;
             
                     }
                     else if (currentBossmove[0] == 'Brace') {
@@ -183,7 +183,8 @@ class Brute extends Phaser.Scene {
                     this.scene.bosslog2.text = '';
                     if(this.scene.fatalattack == false)
                         this.scene.nextmove = this.scene.Brute.announce();
-                    
+                    else
+                        this.scene.nextmove = "use a Special Attack!";
                     this.scene.bosslog.text = "I am going to " + this.scene.nextmove;
                     this.scene.bossPhase = false;
                     this.scene.actionPhase = false;
@@ -351,6 +352,8 @@ class Brute extends Phaser.Scene {
         }
         else {
             this.bossHealth += n;
+            if(this.bossHealth > this.bossMaxHealth)
+                this.bossHealth = this.bossMaxHealth;
         }
         this.setValue(this.BosshealthBar,(this.bossHealth/this.bossMaxHealth));
     }

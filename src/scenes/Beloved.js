@@ -65,8 +65,7 @@ class Beloved extends Phaser.Scene {
         menuConfig.fontSize = '24px';
         this.phase = this.add.text(game.config.width/2, game.config.height/2 -  4*borderUISize, 'Announcement',menuConfig).setOrigin(0.5);
         menuConfig.backgroundColor= '';
-        menuConfig.color = '#000'
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        menuConfig.color = '#000';
         //Comments below were code for tweening that does not work.
         //this.bossHealth = 120;
         //this.bossMaxHealth = 120;
@@ -80,7 +79,7 @@ class Beloved extends Phaser.Scene {
         // });
         menuConfig.backgroundColor= '';
         menuConfig.color = '#000'
-        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-30, 'Round: '+this.round,menuConfig);
+        this.roundtext = this.add.text(60, game.config.height -  3.5*borderUISize+15-32, 'Round: '+this.round,menuConfig);
         
         //Boss action tile
         this.bossActionTile = this.add.sprite(120, game.config.height -  1.5*borderUISize-30, 'bosstile').setScale(0.25);
@@ -162,14 +161,18 @@ class Beloved extends Phaser.Scene {
                     }
                     else if (currentBossmove[0] == "Attack" && number_of_players > 1) {
                         var playertargets = this.scene.sample_range(sample,2);
-                        //console.scene.log(sample);
-                        this.scene.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each: \nif I lose half of my HP, \nI only attack once.";
-
+                        if(this.scene.bossHealth >= this.scene.bossMaxHealth/2)
+                        {
+                            this.scene.bosslog.text = "I hit player " + playertargets[0] + " and player " + playertargets[1] + " for 3 damage each";
+                        }
+                        else
+                        {
+                            this.scene.bosslog.text = "I hit player " + playertargets[0] + " for 3 damage";
+                        }
                     }
                     else if (currentBossmove[0] == "Attack" && number_of_players == 1) {
                         
-                        this.scene.bosslog.text = "I hit player " + random3  + " for 3 damage. \nif I lose half of my HP, \nI miss the attack.";
-
+                        this.scene.bosslog.text = "I hit player " + random3  + " for 3 damage.";
                     }
                     this.scene.damagetook = 0;
                     this.setTint(0x00ff00);
@@ -353,7 +356,6 @@ class Beloved extends Phaser.Scene {
             sample.push(range.splice(Math.random()*range.length,1))
         }
         return sample;
-
     }
     update() {
         this.roundtext.text = 'Round: ' + this.round;
