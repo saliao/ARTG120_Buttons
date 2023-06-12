@@ -144,9 +144,9 @@ class Dragon extends Phaser.Scene {
                     let random = Math.floor((Math.random()*number_of_players)+1);
                     let target;
                     var sample = [];
-                    for(var i=1; i < this.scene.num_rubble; i++){
+                    for(var i=1; i <= this.scene.num_rubble; i++){
                         do
-                            target = Math.floor((Math.random()*number_of_players)+1)
+                            target = Math.floor((Math.random()*(number_of_players))+1)
                         while(sample.includes(target) == true)
                         sample.push(target);
                     }
@@ -161,7 +161,7 @@ class Dragon extends Phaser.Scene {
                     }
                     else if (currentBossmove[0] == "Cave-In") {
                         this.scene.rubblefalling = true;
-                        this.scene.num_rubble = Math.floor((Math.random()*number_of_players)+1);
+                        this.scene.num_rubble = Math.floor((Math.random()*(number_of_players-1))+1);
                         this.scene.bosslog.text = "I smash the ground dealing 2 damage to all players\ncausing rubble to fall on " + this.scene.num_rubble + " random players for 2 damage each round"
                     }
                     if (this.scene.rubblefalling == true && number_of_players > 1) {
@@ -196,7 +196,7 @@ class Dragon extends Phaser.Scene {
             
             
         });
-
+        this.num_rubble = number_of_players;
         // make Dragon boss
         //Making const DragonMoves a List of typed out moves of the Traveler based on the rule's sheet or card.
         const DragonMoves = ["Attack: I hit a random player for 8 damage","Fire Breath: I bellow fire to hit all players for 6 damage", "Cave-In: I smash the ground dealing 2 damage to all players and causing " +this.num_rubble+" rubble to fall on random players for 2 damage each next round", "Scale Armor: Whenever I take damage, reduce it by 2, this stacks."];
